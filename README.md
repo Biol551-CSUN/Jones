@@ -5,5 +5,7 @@
  * [Scripts Folder](https://github.com/Biol551-CSUN/Jones/tree/main/Week_02/Scripts)
   
 ![This is a digital aquarium screensaver!][DreamAquarium]
-[DreamAquarium]:https://dreamaquarium.com/images/moss_angeles_1024_B.jpg
+
+[DreamAquarium]: https://dreamaquarium.com/images/moss_angeles_1024_B.jpg
+
 [Link To DreamAquarium](https://dreamaquarium.com/)
