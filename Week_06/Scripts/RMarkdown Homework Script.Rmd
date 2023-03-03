@@ -1,0 +1,78 @@
+---
+author: Jesse-G-Jones
+date: '`r format(Sys.Date())`'
+title: RMarkdown_Homework
+output:
+  html_document:
+    theme: cosmo
+---
+
+```{r setup, include = TRUE}
+knitr::opts_chunk$set(echo = FALSE,
+                      warning=FALSE,
+                      error=FALSE,
+                      fig.path="../Output/") #saves markdown file to this path
+library(kableExtra)
+
+```
+
+# MY **EPIC** HOMEWORK PLOT :0
+
+```{r HomeworkMarkdownPlot, fig.asp=1.3, fig.align='center', fig.cap="just making the best plot ever pushed to github", dev='png', echo=FALSE}
+library(here)
+library(tidyverse)
+library(palmerpenguins)
+library(kableExtra) #load these libraries
+penguins %>% #loads the penguins.csv file
+  drop_na() %>% #remove rows with any NA (I wanted to get rid of NA sex)
+  group_by(species,sex) %>% #Groups my data by these two columns
+summarise(AverageFlipper=mean(flipper_length_mm, na.rm=TRUE),
+       Mean_Bill_Depth=mean(bill_depth_mm, na.rm=TRUE),
+       Mean_Bill_Length=mean(bill_length_mm, na.rm=TRUE)) %>% #summarises my flipper and bill data into their respective means based on their associated species and sex
+  pivot_longer(c(Mean_Bill_Depth, Mean_Bill_Length), #pivots data longer to create one column with my values of interest and a corresponding "names" column for each different value
+               names_to = "Variables",
+               values_to = "Values") %>% 
+  ggplot(aes(y=Values, x=species, #creates a plot with these aesthetics for x, y, and fill
+                         fill=species))+
+    scale_fill_viridis_d()+ #colorblind-friendly colors!
+  geom_col()+ #I want to create a column graph
+    facet_wrap(~Variables~sex)+ #create subplots based on the variable names and sex
+    labs(title="Average Penguin Bill Size by Species and Sex", #labels for graph title
+         y="Measurement (mm)", #y axis title
+         x="Species", #x axis title
+         fill="Species")+ #fill legend title
+    theme_test()  #uses the theme "test"
+
+```
+# Tables Typed By Hand and Rounded to 10ths Place
+### Mean Bill Depth (mm):
+
+|  Species  | Male | Female |
+|:---------:|:----:|:------:|
+|  Adelie   | 19.1 |  17.6  |
+| Chinstrap | 19.3 |  17.6  |
+|  Gentoo   | 15.7 |  14.2  |
+
+### Mean Bill Length (mm):
+
+|  Species  | Male | Female |
+|:---------:|:----:|:------:|
+|  Adelie   | 40.4 |  37.3  |
+| Chinstrap | 46.6 |  51.1  |
+|  Gentoo   | 45.6 |  49.5  |
+```{r}
+penguins %>% #loads the penguins.csv file
+  drop_na() %>% #remove rows with any NA (I wanted to get rid of NA sex)
+  group_by(species,sex) %>% #Groups my data by these two columns
+summarise(AverageFlipper=mean(flipper_length_mm, na.rm=TRUE),
+       Mean_Bill_Depth=mean(bill_depth_mm, na.rm=TRUE),
+       Mean_Bill_Length=mean(bill_length_mm, na.rm=TRUE)) %>% #summarises my flipper and bill data into their respective means based on their associated species and sex
+  pivot_longer(c(Mean_Bill_Depth, Mean_Bill_Length), #pivots data longer to create one column with my values of interest and a corresponding "names" column for each different value
+               names_to = "Variables",
+               values_to = "Values") %>% 
+  kbl() %>% 
+kable_classic() %>% 
+  row_spec(1,bold=T,background="darkgrey") %>% 
+  kable_styling(full_width = FALSE)
+```
+

@@ -1,0 +1,58 @@
+---
+title: "class lecture 2023-03-02"
+author: "Jesse"
+date: "2023-03-02"
+output: 
+  html_document
+---
+
+```{r setup, include=TRUE}
+library(here)
+knitr::opts_chunk$set(echo = TRUE,
+                      warning=FALSE,
+                      error=FALSE,
+                      fig.path="../Output/") #saves markdown file to this path
+```
+
+## My PLOT :)
+
+MAKING THE BEST PLOT EVER
+
+```{r penguin, fig.width=9, fig.height=3, fig.align='center', fig.cap="My Caption!", dev='png', echo=FALSE}
+#change figure width and heigh - fig.width/height=
+#change figure size, retaining aspect ratio- out.width="#%"
+#change aspect ratio: fig.asp=#.#
+#align figure - fig.align='center, right, etc'
+#echo="FALSE, TRUE" can change whether or not the code shows up for this chunk of code for the graph
+library(here)
+library(palmerpenguins)
+library(kableExtra)
+library(tidyverse)
+library(ymlthis)
+penguins %>%
+  group_by(species) %>% 
+  ggplot(aes(x=flipper_length_mm, y=body_mass_g,
+             color=species))+
+  geom_smooth()+
+  geom_point(size=.8)
+```
+
+| Time   | Session  |                 Topic |
+|:-------|:--------:|----------------------:|
+| *left* | *center* |               *right* |
+| 01:00  |          |                     1 |
+| 02:55  |          | **Computer Modeling** |
+
+```{r}
+penguins %>% 
+  group_by(species) %>% 
+  summarise(billmean=mean(bill_length_mm, na.rm=TRUE)) %>% 
+  kbl() %>%  #make it a kable table
+kable_classic() %>% 
+  row_spec(1, bold=T, color="beige", background="black") %>% #row_spec specifies which rows to change the colors and stuffs
+  kable_styling(full_width=FALSE) #negates the default width which normally makes it the width of the entire html file
+```
+
+\`\`\`
+
+\`\`\`
