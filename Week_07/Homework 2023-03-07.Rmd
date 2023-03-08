@@ -1,0 +1,69 @@
+---
+title: "**Homework 2023-03-07**"
+author: "Jesse"
+date: "2023-03-07"
+output: 
+  prettydoc:html_pretty
+    theme:tactile
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      warning=FALSE,
+                      error=FALSE,
+                      fig.path="../Output/") #saves it to this destination file
+```
+
+# Plot
+
+```{r HomeworkPlot, include=TRUE, fig.align='center', echo=FALSE}
+library(tidyverse)
+library(here)
+library(maps)
+library(mapdata)
+library(mapproj)
+library(stringr)
+
+plastics_lower <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-01-26/plastics.csv') %>% 
+  mutate(region=tolower(country))
+world=map_data("world")
+view(plastics_lower)
+
+setdiff(plastics_pepsi$region,world_lower$region)
+
+setdiff(world_lower$region,plastics$region)
+setdiff(plastics_graph$country, world$region)
+
+world_lower <- map_data("world") %>% 
+  mutate(region=tolower(region))
+
+
+
+plastics_pepsi <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-01-26/plastics.csv') 
+view(plastics_pepsi)
+plastics_graph <- plastics_pepsi%>%
+  mutate(region=case_when(country=="United States of America"~"USA",
+                         country=="United Kingdom of Great Britain & Northern Ireland"~"UK",
+                         country=="United Kingdom"~"UK",
+                         country=="Korea"~"South Korea",
+                         country=="Hong Kong"~"China",
+                         TRUE ~as.character(plastics_pepsi$country))) %>% 
+  
+  mutate(company=tolower(parent_company)) %>%
+  
+  filter(company=="pepsico") %>% 
+  
+  full_join(world) %>% 
+ 
+   summarise(company, region, lat, long, group, grand_total, order)
+
+view(plastics_graph)
+
+ggplot()+
+  geom_polygon(data=plastics_graph, aes(group=group, x=long, y=lat, fill=grand_total), color="orange")+
+  
+  scale_fill_gradient(trans="log2")+
+theme_void()+
+theme(panel.background=element_rect(fill="lightblue"))+
+  ggsave(here("Week_07","Output","Lecture_Map.pdf"))
+ggsave(here("Week_07","Output","Homework_Map.pdf"))
