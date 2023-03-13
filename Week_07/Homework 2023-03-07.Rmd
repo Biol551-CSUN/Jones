@@ -13,57 +13,43 @@ knitr::opts_chunk$set(echo = TRUE,
                       error=FALSE,
                       fig.path="../Output/") #saves it to this destination file
 ```
-
+#### Last edited - 2023-03-09
 # Plot
 
 ```{r HomeworkPlot, include=TRUE, fig.align='center', echo=FALSE}
+#Load libraries
 library(tidyverse)
 library(here)
 library(maps)
 library(mapdata)
 library(mapproj)
 library(stringr)
-
-plastics_lower <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-01-26/plastics.csv') %>% 
-  mutate(region=tolower(country))
-world=map_data("world")
-view(plastics_lower)
-
-setdiff(plastics_pepsi$region,world_lower$region)
-
-setdiff(world_lower$region,plastics$region)
-setdiff(plastics_graph$country, world$region)
-
-world_lower <- map_data("world") %>% 
-  mutate(region=tolower(region))
-
-
-
-plastics_pepsi <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-01-26/plastics.csv') 
-view(plastics_pepsi)
-plastics_graph <- plastics_pepsi%>%
-  mutate(region=case_when(country=="United States of America"~"USA",
-                         country=="United Kingdom of Great Britain & Northern Ireland"~"UK",
-                         country=="United Kingdom"~"UK",
-                         country=="Korea"~"South Korea",
-                         country=="Hong Kong"~"China",
-                         TRUE ~as.character(plastics_pepsi$country))) %>% 
+world=map_data("world") #create a function that includes the requisite data to create a plot of the world
+plastics_pepsi <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-01-26/plastics.csv') #create a function that loads the tidytuesday csv on plastic collections
+plastics_graph <- plastics_pepsi %>% #new data frame for manipulation of data
+  mutate(region=case_when(country=="United States of America" ~ "USA", #add "regions" column and rename these countries in accord with my world data
+                          country=="United Kingdom of Great Britain & Northern Ireland"~"UK",
+                          country=="United Kingdom"~"UK",
+                          country=="Korea"~"South Korea",
+                          country=="Hong Kong"~"China",
+                          TRUE ~as.character(plastics_pepsi$country))) %>% 
   
-  mutate(company=tolower(parent_company)) %>%
+  mutate(company=tolower(parent_company)) %>% #make the parent_company data lowercase because some pepsi data has different casing
   
-  filter(company=="pepsico") %>% 
-  
-  full_join(world) %>% 
- 
-   summarise(company, region, lat, long, group, grand_total, order)
+  filter(company=="pepsico") #filter by pepsico
+world_new <- world %>% #create a function that loads the world dataframe
+  full_join(plastics_graph) %>% #combine all data between plastics_graph and world data
+  summarise(company, region, lat, long, group, grand_total, order) #only include these columns
 
-view(plastics_graph)
-
-ggplot()+
-  geom_polygon(data=plastics_graph, aes(group=group, x=long, y=lat, fill=grand_total), color="orange")+
-  
-  scale_fill_gradient(trans="log2")+
-theme_void()+
-theme(panel.background=element_rect(fill="lightblue"))+
-  ggsave(here("Week_07","Output","Lecture_Map.pdf"))
-ggsave(here("Week_07","Output","Homework_Map.pdf"))
+ggplot()+ #create a plot
+  geom_polygon(data=world_new, aes(group=group, x=long, y=lat, fill=grand_total), color="orange1")+ #plot polygons to form a map of the world using these aesthetics
+  scale_fill_viridis_c(trans="log2")+ #use continuos colors and represent the difference in grand_total as log base 2 values
+  theme_void()+ #change the theme of the plot so I can customize the background
+  theme(panel.background=element_rect(fill="lightblue"))+ #make the background light blue
+  labs(title="PepsiCo Plastics Collected Per Country", #create plot title
+       fill="Log_2 of Total Plastics 
+       Collected Per Country", #rename the "fill" legend for grand_total
+       caption="Hong Kong's plastics attributed to China as a whole; North Korea's plastics as a whole attributed to only South Korea 
+(the plastics data set did not draw a difference between these national entities)")+ #create a caption with this text
+ggsave(here("Week_07","Output","Homework_Map.pdf"),
+       width=9.5, height=5)#save to the appropriate location
