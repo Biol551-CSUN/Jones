@@ -1,0 +1,119 @@
+---
+title: "Good Plot//Bad Plot Assignment"
+author: "Jesse"
+date: "2023-03-30"
+output: html_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#Load Libraries
+library(tidyverse)
+library(here)
+library(gganimate)
+library(ggmap)
+library(ggrepel)
+library(magick)
+library(extrafont)
+library(ggimage)
+
+eruptions <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-05-12/eruptions.csv')
+
+font_import() #Importing fonts from windows to R may take a while!
+
+eruptions_start <- eruptions %>% #create a function to make a new data set
+  filter(start_year %in% c("2015","2016", "2017", "2018", "2019"), #only select rows with these years
+         longitude<150, #and greater than this longitude
+         longitude>125.5, latitude>30, latitude<45) %>% #and lesser than this longitude & in between these latitudes
+  mutate(year=start_year) #add a "start_year" column which is just year
+
+eruptions_end <- eruptions %>% 
+  filter(end_year %in% c("2015","2016", "2017", "2018", "2019"), #select rows with only these start years
+         start_year %in% c("2015","2016","2017", "2018", "2019"), #select rows with only these end years
+         longitude<150, #select rows only with a longitude value greater than 150
+         longitude>125.5, latitude>30, latitude<45) %>% #select rows only with a longitude lesser than 125.5 and between these latitude values
+  mutate(year=end_year) #add a "year" column for end year
+
+eruption_names1 <- eruptions_start %>% #create a function for a new data set 
+  select(volcano_name,latitude,longitude, year) %>% #select only these rows
+  distinct() #remove duplicate rows
+
+eruption_names2 <- eruptions_end %>% #create a function for data wrangling
+  select(volcano_name,latitude,longitude, year) %>% #select only these rows
+  distinct() #remove duplicate rows
+
+eruption_full <- inner_join(eruption_names2, eruption_names1) #join these two datasets, fusing the identical values and characters between the two sets but also retaining unique information
+
+map_coords <- data.frame(lat=36.2, lon=138.3) #create a function to map this latitude and longitude
+coords <- get_map(map_coords, zoom=5) #create a function to plot the map with a specific zoom
+```
+
+## Let's Make a Bad Plot!
+
+```{r Bad Plot}
+knitr::opts_chunk$set(echo = TRUE,
+                      warning=FALSE)
+bad_plot <- ggplot()+
+  
+  theme(panel.grid.major=element_line(color="green"), #change the color of my gridlines to green
+        panel.grid.minor=element_line(color="magenta"), #and magenta
+        text=element_text(family = "Curlz MT",size=15, color="dodgerblue", face="bold"), #make my text this font, size, color, and bold
+        axis.text=element_text(family="Showcard Gothic", size=13, color="yellow"))+ #change my axis text on my plot to this font, size, and color
+  
+  geom_point(data=eruption_full, aes(x=year, y=longitude, #make a scatterplot with y as longitude, color as name of voclano, and size as latitude
+                                             color=volcano_name,
+                                             size=latitude))+
+  
+  scale_color_manual(values=c("dodgerblue","blue1","blue2","blue3", #manually change the colors of my data points
+                              "slateblue","deepskyblue", "cornflowerblue", 
+                              "skyblue", "cadetblue1", "darkturquoise"))+
+  labs(title="Coordinates of Active Volcanos During 2015-2019") #give my plot a title
+                                
+
+volcanoeruption="http://clipart-library.com/images/riLo9gGaT.gif" #this is the link to the background image
+
+ggbackground(bad_plot, volcanoeruption)#+ #add a background to my image
+  #ggsave(here("GoodPlot_BadPlot", "Output", "BadPlot.png"))
+```
+
+#### What makes this a bad plot?
+
+-   Overall, this plot is very, very ugly:
+    -   The background is hideous
+    -   The gride lines do not match well and are very jarring to look at
+    -   The font is just awful
+-   This plot is difficult to interpret:
+    -   Latitude and longitude should be plotted on a map
+    -   Latitude and longitude should be on the y and axis axes, respectively, and one should certainly *NOT* be represented by size
+    -   The colors representing each volcano are nearly indistinguishable (though they are different!)
+
+## Let's Make a Good Plot!
+
+```{r Good Plot}
+knitr::opts_chunk$set(echo = TRUE,
+                      warning=FALSE)
+coords_animated <- ggmap(coords)+ #create a function with the coords map
+   geom_point(data=eruption_full, aes(x=longitude, y=latitude, #and create a scatterplot using eruption_full data with x as longitude, y as latitude, color as the name of the volcano, size of points is 4, and partially opque
+                                        color=volcano_name), size=4.5,
+              alpha=0.75)+
+  transition_states(year, #create an animated plot that views data by year
+                    transition_length=2, #takes 2 seconds to transition from year-to-year
+                  state_length=5)+ #remain at one year for 5 seconds
+  ggtitle("Year: {closest_state}")+ #make my plot title change by year and represent "year"
+  labs(subtitle="Active Volcanos in Japan by Year, 2015-2019", #this is my subtitle
+       x="Longitude", #this is my x axis title
+       y="Latitude", #this is my y axis title
+       color="Name of Volcano")+ #this is my color legend title
+  scale_x_continuous(limits=c(128, 149))+ #limit my x axis
+  scale_y_continuous(limits=c(28,45))+ #and my y axis
+  theme(text=element_text(family = "Trebuchet MS",size=12))+ #change the text font and size
+  scale_color_manual(values=c("cyan","coral4","slateblue","black","green","yellow")) #manually change the colors of my values
+animate(coords_animated, height=6, width=6, units="in", res=200)#+ #animate my plot
+#anim_save(here("GoodPlot_BadPlot", "Output", "GoodPlot.gif"))
+```
+
+#### What makes this a good plot?
+
+-   The image is high resolution
+-   The colors are easy to see on the map background
+-   The base layer of the map can still be seen beneath the plotted data points
+-   The font is legible and aesthetic
