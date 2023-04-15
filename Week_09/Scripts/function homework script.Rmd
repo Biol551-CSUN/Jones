@@ -1,0 +1,99 @@
+---
+title: "Function Script"
+author: "Jesse Jones"
+date: "2023-04-15"
+output:
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: github
+---
+
+## Sources & Credits
+
+-   2019-04-23 tidytuesday dataset: [Anime Data](https://github.com/rfordatascience/tidytuesday/blob/master/data/2019/2019-04-23)
+-   Link to data source: [MyAnimeList](https://www.kaggle.com/aludosan/myanimelist-anime-dataset-as-20190204)
+-   Link to article: [MyAnimeList](https://myanimelist.net/topanime.php?type=bypopularity)
+-   Link to the tidytuesday github repository: [tidytuesday](https://github.com/rfordatascience/tidytuesday)
+
+## [Data Dictionary Link](https://github.com/rfordatascience/tidytuesday/tree/master/data/2019/2019-04-23#data-dictionary)
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load Libraries
+
+```{r, warning=FALSE, echo=TRUE}
+library(tidyverse)
+library(here)
+```
+
+## Get the Data
+
+```{r, warning=FALSE, echo=TRUE}
+tidy_anime <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-04-23/tidy_anime.csv")
+```
+
+## Data Wrangling
+
+```{r, warning=FALSE, echo=TRUE}
+animes_filtered <- tidy_anime %>% #assign an object for data wrangling
+  select(title_english, popularity, title_japanese, episodes, #select data within only these columns in my dataframe
+         type, scored_by, rank, score, genre) %>% 
+  distinct() #discard of duplicates
+
+anime_data <- tidy_anime %>% #assign an object for data wrangling
+  filter(type=="TV", title_english %in% c("Death Note", "Attack on Titan", "Sword Art Online", #filter based on type and english titles
+                                          "Fullmetal Alchemist: Brotherhood", "One Punch Man")) %>% 
+  select(title_english, title_japanese, episodes, score, rank, popularity, scored_by, type) %>%  #select only data within these columns
+  distinct() #discard of duplicates
+```
+
+## Create a Plot Function
+
+```{r, warning=FALSE, echo=TRUE}
+plot_anime <- function(data=anime_data, x, y, english=TRUE){ #create a plot_anime function with anime_data as my default data, x and y aesthetics, and an if_else for title (english)
+if(english==TRUE){  #my logical/question
+ggplot(data=anime_data, aes(x={{x}}, y={{y}}, fill=title_english))+ #plots anime_data, allowing me to assign x and y aesthetics based on the dataframe column/objects; since english==TRUE, I will have fill represent the title_english object
+    theme_light()+ #use the light theme
+    geom_col()+ #create a column plot
+    theme(axis.text.x=element_blank())+ #make my x axis text blank
+    labs(fill= "English Title") #this is the title of my fill legend
+}
+else{ #the next portion of my logical
+ggplot(data=anime_data, aes(x={{x}}, y={{y}}, fill=title_japanese))+ #create a plot with the default data as anime_data, allowing me to assign the x & y aesthetics based on objects inside my dataframe of interest, and my fill will represent the title_japanese object
+    theme_light()+ #use the light theme
+    geom_col()+ #create a column plot
+    theme(axis.text.x=element_blank())+ #remove my x axis text
+    labs(fill= "Japanese Title") #this is the title of my fill legend
+}
+}
+
+
+plot_anime(x=title_english, y=scored_by, english=TRUE)+ #use my plot_anime function; title_english is on my x axis and scored_by is on my y axis, and I will have the english title displayed
+  labs(x="", #no x axis title
+       y="Scored by This Number of Viewers", #this is my y axis title
+       title="Popular Anime Titles by Number of Scores Received") #this is my plot title
+#ggsave(here("Week_10", "Output", "function_plot1.png")) #saving my plot to this pathway/file name
+
+plot_anime(x=title_japanese, y=score, english=FALSE) + #using my plot_anime function to plot the japanese title on the x axis, score on the y axis, and I will not display the english title
+  labs(x="", #make my x axis title blank
+       y="Score Out of 10", #this is my y axis title
+       title="Popular Anime Titles by Score") #this is my plot title
+#ggsave(here("Week_10", "Output", "function_plot2.png")) #saving my image to this pathway/file name
+```
+
+```{r, warning=FALSE, echo=TRUE}
+anime_search <- function(data=animes_filtered, genre, type){ #create a function called anime_search with default data as the animes_filtered dataframe, allowing the user to search by genre and type
+  animes <- animes_filtered %>% #this is my return object
+    filter(genre=={{genre}}, type=={{type}}) %>% #filter by genre and type
+  return(animes)
+}
+
+anime_list1 <- anime_search(genre="Action", type="TV") #search for animes in the genre "Action" and that were (presumably) broadcasted on TV
+anime_list1 #view the data
+
+anime_list2 <- anime_search(genre="Comedy", type="Movie") #search for Comedy anime movies
+anime_list2 #view the data
+
+```
