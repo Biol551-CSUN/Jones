@@ -83,6 +83,8 @@ plot_anime(x=title_japanese, y=score, english=FALSE) + #using my plot_anime func
 #ggsave(here("Week_10", "Output", "function_plot2.png")) #saving my image to this pathway/file name
 ```
 
+## Creating a Function for Data Searching/Wrangling
+
 ```{r, warning=FALSE, echo=TRUE}
 anime_search <- function(data=animes_filtered, genre, type){ #create a function called anime_search with default data as the animes_filtered dataframe, allowing the user to search by genre and type
   animes <- animes_filtered %>% #this is my return object
