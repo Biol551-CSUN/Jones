@@ -36,20 +36,20 @@ clean_intertidal <- data %>% #create an object for data wrangling
 "Low"=" Low",
 "Mid"=" Mid",
 "High"=" High")) %>% 
-  select(Stars, Crabs, Whelks, Site, Transect, Tide_Height, Bare_Rock, Algae, Small_Barnacles, Large_Barnacles, Gooseneck_Barnacles, Anemone) %>%  #select only these columns
+  mutate(Tide_Height2=factor(Tide_Height, levels=c("Low", "Mid", "High"))) %>% #order the rows of my data by low, then mid, then high tide for the x axis on the plot
+  select(Stars, Crabs, Whelks, Site, Transect, Tide_Height2, Bare_Rock, Algae, Small_Barnacles, Large_Barnacles, Gooseneck_Barnacles, Anemone) %>%  #select only these columns
   filter(Site %in% c("Shell Beach", "Hazards", "Dana Point", "Cape Meares")) #filter my sites so that I only have the ones that I included
 ```
 ### Make a Plot
 
 ```{r plot, echo=TRUE, warning=FALSE}
 ggplot()+
-  geom_col(data=clean_intertidal, aes(x=Tide_Height, y=Crabs, fill=Site))+ #select the clean_intertidal dataframe and Tide_Height as my x axis, Number of Crabs as my y axis, and fill color representing Site
+  geom_col(data=clean_intertidal, aes(x=Tide_Height2, y=Crabs, fill=Site))+ #select the clean_intertidal dataframe and Tide_Height as my x axis, Number of Crabs as my y axis, and fill color representing Site
   facet_wrap(~Site)+ #create sub-plots based on Site (location)
-  scale_x_discrete(limits=c("Low","Mid","High"))+ #order my x axis categories by Low, then Mid, then High
   labs(title="Number of Crabs by Site and Tide Height", #This is my plot title
        x="Tide Height", #this is my x axis title
        y="Number of Crabs Seen")+ #this is my y axis title
   theme(plot.title=element_text(hjust=0.5)) #centering my plot title
-ggsave(here("Week_11","output","Plot.png")) #saving my plot to this pathway
+ggsave(here("Week_11","Output","Plot.png")) #saving my plot to this pathway
 ```
 
