@@ -1,0 +1,55 @@
+---
+title: "Homework Week 12"
+author: "Jesse Jones"
+date: "2023-05-03"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+---
+## Finding Mean and SD Using forloop
+```{r, echo=TRUE, warning=FALSE, error=FALSE}
+###Libraries###
+library(here) 
+library(tidyverse)
+###Data###
+hwpath <- here("Week_12", "data", "homework") #create an object that locates where your files are (path)
+hwfiles <- dir(path= hwpath, pattern= ".csv") #create an object that calls all .csv files in your path
+tpdata <- data.frame(matrix(nrow = length(hwfiles), ncol=5)) #create an object that is an empty dataframe (allocate space) for your for loop
+colnames(tpdata) <- c("File_Name", "Intensity.lux_mean", "Intensity.lux_sd", "Temp.C_mean", "Temp.C_sd") #crete a column for the file name
+
+data <- read_csv(paste0(hwpath, "/", hwfiles[1])) #testing to see if the first file is read into my dataframe
+
+
+for (i in 1:length(hwfiles)){ #loop over 1:the number of files in hwfiles (total of 4 .csv files)
+  
+  data <- read_csv(paste0(hwpath, "/", hwfiles[i])) #read in my csv files
+  
+  tpdata$File_Name[i] <- hwfiles[i] #add the file name of my hwfiles into the File_Name column
+  tpdata$Intensity.lux_mean <- mean(data$Intensity.lux, na.rm=TRUE) #calculate the mean and add to my dataframe as its own column
+  tpdata$Intensity.lux_sd <- sd(data$Intensity.lux, na.rm=TRUE) #calculate the standard deviation and add to my dataframe as its own column
+  tpdata$Temp.C_mean <- mean(data$Temp.C, na.rm=TRUE) #doing the same for Temp.C mean
+  tpdata$Temp.C_sd <- sd(data$Temp.C, na.rm=TRUE) #and Temp.C standard deviation
+  
+}
+tidy_tpdata <- tpdata %>% #tidying my data so that the columns are in the right order and I don't have an extra row for Temp.C_mean (not sure what I did wrong)
+  select(File_Name, Intensity.lux_mean, Intensity.lux_sd, Temp.C_mean, Temp.C_sd)
+tidy_tpdata
+
+```
+## Finding Mean and SD Using map()
+```{r}
+mapfiles <- dir(path=hwpath, pattern=".csv", full.names = TRUE) #create an object that lists the files in this directory (folder)
+
+mapdata <- mapfiles %>% #create a dataframe with my mapfiles list
+  set_names() %>% #the file pathway & name become the id for each list (row?); I'm not clear on what this does exactly, but it seems necessary for listing my file paths
+  map_df(read_csv, .id="File_Name") %>% #create a column for the file directory & name
+group_by(File_Name) %>% #groups dataframe data by File_Name
+  summarise(Temp.C_mean=mean(Temp.C, na.rm=TRUE), #create and select for new columns for mean for Temp.C
+            Temp.C_sd=sd(Temp.C, na.rm=TRUE), #and sd for Temp.C
+            Intensity.lux_mean=mean(Intensity.lux, na.rm=TRUE), #and mean for Intensity.lux
+            Intensity.lux_sd=sd(Intensity.lux, na.rm=TRUE)) #and standard deviation for Intensity.lux
+mapdata
+```
+
+
